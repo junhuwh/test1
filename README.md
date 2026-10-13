@@ -31,6 +31,12 @@ Enterprise-grade, spec-driven RESTful backend for **"Book Worm"** — a modern e
 
 ---
 
+> 💡 **Reviewer Quick Navigation**:
+> - 📄 **API Design Governance Review**: [API_DESIGN_REVIEW.md](./API_DESIGN_REVIEW.md) — Comprehensive contract review (15 APIs, 25 Schemas, 66 References, RFC 9457 Problem Details).
+> - 🐳 **Production Deployability**: [Dockerfile](./Dockerfile) & [docker-compose.yml](./docker-compose.yml) — Containerized single-command execution.
+> - 🎬 **Reviewer Demo Walkthrough Script**: [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) — 3-5 minute presentation script.
+
+
 ## 1. Project Overview
 
 The **Book Worm** eCommerce platform provides a seamless digital bookstore experience modeled directly after the Capstone wireframe specifications:
@@ -332,7 +338,12 @@ com.bookworm/
 | **2. API Specification** | OpenAPI 3.x Contract | Single valid `openapi.yaml` with 15 operations and RFC 9457 Problem Details | **Exceeds** |
 | **3. Backend Implementation** | Spring Boot 3 + PostgreSQL | Java 21, Spring Boot 3.3.5, Spring Data JPA, Flyway migrations | **Exceeds** |
 | **4. Database Persistence** | Real PostgreSQL relational storage | 7 tables with foreign keys, JSONB support, and audit timestamps | **Exceeds** |
-| **5. Business Requirements** | Wireframes & Customer Journeys | Browse $ightarrow$ Cart $ightarrow$ Quote $ightarrow$ Order $ightarrow$ 48h Cancel $ightarrow$ Buy Again all verified | **Exceeds** |
+| **5. Business Requirements** | Wireframes & Customer Journeys | Browse $
+ightarrow$ Cart $
+ightarrow$ Quote $
+ightarrow$ Order $
+ightarrow$ 48h Cancel $
+ightarrow$ Buy Again all verified | **Exceeds** |
 | **6. Testing & Quality** | $\ge 80\%$ test coverage & verification | 43 passing unit tests + 5 comprehensive markdown audit reports | **Exceeds** |
 
 ---
