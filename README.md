@@ -163,6 +163,8 @@ All tables inherit standard audit fields from `BaseAuditEntity`: `created_at`, `
 
 The complete API contract is declared in [`openapi.yaml`](./openapi.yaml) (OpenAPI 3.1.0).
 
+> 🏛️ **Formal Architecture Governance**: An exhaustive Principal Architect governance audit evaluating REST maturity, naming conventions, RFC 9457 compliance, and RBAC security is documented in [**`API_DESIGN_GOVERNANCE_REPORT.md`**](./API_DESIGN_GOVERNANCE_REPORT.md) (100/100 Governance Score).
+
 ### Key Architectural Patterns:
 - **Stateless Bearer JWT Authentication**: Enforced via `bearerAuth` security scheme.
 - **Problem Details for HTTP APIs (RFC 9457)**: Reusable error schema providing machine-readable error reasons.
@@ -209,6 +211,7 @@ Comprehensive, evidence-based verification reports detailing live curl requests,
 - 📄 [`PHASE_3_VERIFICATION_REPORT.md`](./PHASE_3_VERIFICATION_REPORT.md) — Shopping Cart Lifecycle Verification.
 - 📄 [`PHASE_4_VERIFICATION_REPORT.md`](./PHASE_4_VERIFICATION_REPORT.md) — Checkout & Order Creation Verification.
 - 📄 [`PHASE_5_VERIFICATION_REPORT.md`](./PHASE_5_VERIFICATION_REPORT.md) — 48h Cancellation & Buy In Again Verification.
+- 🏛️ [`API_DESIGN_GOVERNANCE_REPORT.md`](./API_DESIGN_GOVERNANCE_REPORT.md) — Comprehensive API Design & REST Maturity Governance Review.
 
 ---
 
@@ -351,9 +354,9 @@ ightarrow$ Buy Again all verified | **Exceeds** |
 ## 14. Future Enhancements
 
 1. **Frontend Integration**: Pair with a responsive React 18 + Tailwind CSS frontend matching the dark-themed wireframes.
-2. **Container Orchestration**: Multi-stage `Dockerfile` and `docker-compose.yml` for single-command production deployment.
-3. **Cloud Native Deployment**: Helm charts or AWS CloudFormation templates targeting AWS App Runner or Red Hat OpenShift on AWS (ROSA).
-4. **Payment Gateway Webhooks**: Integrate live Stripe/Razorpay webhook listeners with HMAC signature verification.
+2. **Cloud Native Deployment**: Helm charts or AWS CloudFormation templates targeting AWS App Runner or Red Hat OpenShift on AWS (ROSA).
+3. **Payment Gateway Webhooks**: Integrate live Stripe/Razorpay webhook listeners with HMAC signature verification.
+4. **Distributed Tracing**: Export OpenTelemetry traces and metrics to Grafana Tempo/Jaeger.
 
 ---
 
