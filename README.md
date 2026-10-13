@@ -34,7 +34,8 @@ Enterprise-grade, spec-driven RESTful backend for **"Book Worm"** — a modern e
 > 💡 **Reviewer Quick Navigation**:
 > - 📄 **API Design Governance Review**: [API_DESIGN_REVIEW.md](./API_DESIGN_REVIEW.md) — Comprehensive contract review (15 APIs, 25 Schemas, 66 References, RFC 9457 Problem Details).
 > - 🐳 **Production Deployability**: [Dockerfile](./Dockerfile) & [docker-compose.yml](./docker-compose.yml) — Containerized single-command execution.
-> - 🎬 **Reviewer Demo Walkthrough Script**: [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) — 3-5 minute presentation script.
+> - 🎬 **Reviewer Demo Walkthrough Script**: [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) — 3-5 minute presentation script ([Edge Narration Script](./edge_DEMO_SCRIPT.md)).
+> - 🎓 **Capstone Review Board Audit**: [CAPSTONE_REVIEW_BOARD_AUDIT.md](./CAPSTONE_REVIEW_BOARD_AUDIT.md) — Final comprehensive audit & submission readiness verification.
 
 
 ## 1. Project Overview
@@ -212,6 +213,7 @@ Comprehensive, evidence-based verification reports detailing live curl requests,
 - 📄 [`PHASE_4_VERIFICATION_REPORT.md`](./PHASE_4_VERIFICATION_REPORT.md) — Checkout & Order Creation Verification.
 - 📄 [`PHASE_5_VERIFICATION_REPORT.md`](./PHASE_5_VERIFICATION_REPORT.md) — 48h Cancellation & Buy In Again Verification.
 - 🏛️ [`API_DESIGN_GOVERNANCE_REPORT.md`](./API_DESIGN_GOVERNANCE_REPORT.md) — Comprehensive API Design & REST Maturity Governance Review.
+- 🎓 [CAPSTONE_REVIEW_BOARD_AUDIT.md](./CAPSTONE_REVIEW_BOARD_AUDIT.md) — Final Comprehensive Capstone Review Board Audit & Rubric Checklist.
 
 ---
 
