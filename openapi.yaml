@@ -1,0 +1,1393 @@
+openapi: 3.1.0
+info:
+  title: Book Worm E-Commerce API
+  description: Streamlined backend API specification for the Book Worm eCommerce online bookstore capstone project. Supports catalog exploration, cart management, checkout quotes, orders, 48-hour order cancellation, and repeat purchases.
+  version: 1.0.0
+  contact:
+    name: Book Worm Engineering Team
+    email: engineering@bookworm.example.com
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+tags:
+  - name: Authentication
+    description: User registration and authentication
+  - name: Catalog
+    description: Book catalog browsing, search, and details
+  - name: Reviews
+    description: Customer book ratings and reviews
+  - name: Cart
+    description: Shopping cart and item operations
+  - name: Checkout
+    description: Checkout price calculation and quote generation
+  - name: Orders
+    description: Order placement, order history, cancellation, and re-order
+paths:
+  /api/v1/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Creates a new customer account and returns JWT credentials.
+      operationId: registerUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              email: "john.smith@example.com"
+              password: "Password123!"
+              fullName: "John Smith"
+      responses:
+        '201':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              example:
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.exampleToken..."
+                tokenType: "Bearer"
+                user:
+                  id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+                  email: "john.smith@example.com"
+                  fullName: "John Smith"
+                  role: "ROLE_CUSTOMER"
+                  giftPoints: 100
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate user
+      description: Validates email and password, returning a JWT bearer token.
+      operationId: loginUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: "john.smith@example.com"
+              password: "Password123!"
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              example:
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.exampleToken..."
+                tokenType: "Bearer"
+                user:
+                  id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+                  email: "john.smith@example.com"
+                  fullName: "John Smith"
+                  role: "ROLE_CUSTOMER"
+                  giftPoints: 100
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/categories:
+    get:
+      tags:
+        - Catalog
+      summary: Get all categories
+      description: Retrieves the list of all categories for sidebar navigation.
+      operationId: getCategories
+      security: []
+      responses:
+        '200':
+          description: Category list retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryDto'
+              example:
+                - id: "b1a1a1a1-1111-4111-8111-111111111111"
+                  name: "Romance"
+                  slug: "romance"
+                - id: "b2a2a2a2-2222-4222-8222-222222222222"
+                  name: "Mystery"
+                  slug: "mystery"
+                - id: "b3a3a3a3-3333-4333-8333-333333333333"
+                  name: "Self Help"
+                  slug: "self-help"
+  /api/v1/books:
+    get:
+      tags:
+        - Catalog
+      summary: Search and filter books
+      description: Returns a paginated list of books with search query, category, format, and price filters.
+      operationId: getBooks
+      security: []
+      parameters:
+        - name: query
+          in: query
+          description: Keyword search across book title and author name
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+        - name: categoryId
+          in: query
+          description: Filter by category ID
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          description: Filter by book edition format
+          required: false
+          schema:
+            type: string
+            enum: [Paperback, Hardcover, eBook]
+        - name: minPrice
+          in: query
+          description: Minimum book price filter
+          required: false
+          schema:
+            type: number
+            minimum: 0
+        - name: maxPrice
+          in: query
+          description: Maximum book price filter
+          required: false
+          schema:
+            type: number
+            minimum: 0
+        - name: sortBy
+          in: query
+          description: Sort criterion
+          required: false
+          schema:
+            type: string
+            enum: [relevance, priceAsc, priceDesc, rating, newest]
+            default: relevance
+        - name: page
+          in: query
+          description: Zero-based page index
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Number of records per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 12
+      responses:
+        '200':
+          description: Paginated books response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageBookDto'
+              example:
+                content:
+                  - id: "c1c1c1c1-1111-4111-8111-111111111111"
+                    title: "The Art of Focus"
+                    authorName: "Arjun Patel"
+                    price: 399.00
+                    format: "Paperback"
+                    categoryName: "Self Help"
+                    rating: 4.8
+                    frontCoverUrl: "https://assets.bookworm.example/covers/art-of-focus-front.jpg"
+                    estimatedDelivery: "Mon, 21 Jul"
+                page: 0
+                size: 12
+                totalElements: 48
+                totalPages: 4
+
+  /api/v1/books/{id}:
+    get:
+      tags:
+        - Catalog
+      summary: Get book details by ID
+      description: Returns comprehensive details of a book, including front/back covers, author bio, publisher, and reviews.
+      operationId: getBookById
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the book
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book detail retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookDetailDto'
+              example:
+                id: "c2c2c2c2-2222-4222-8222-222222222222"
+                title: "Joy of Minimalism"
+                isbn: "978-0-123456-78-9"
+                description: "Declutter your life to uncover peace, clarity, and joy."
+                categoryId: "b3a3a3a3-3333-4333-8333-333333333333"
+                categoryName: "Self Help"
+                authorName: "Daniel Reed"
+                authorBio: "Daniel Reed is a writer, minimalist, and productivity coach based in San Francisco."
+                authorAvatarUrl: "https://assets.bookworm.example/authors/daniel-reed.jpg"
+                publisherName: "ABC Publishers"
+                format: "Paperback"
+                language: "English"
+                price: 149.00
+                stockQuantity: 85
+                salesCount: 145
+                rating: 4.6
+                frontCoverUrl: "https://assets.bookworm.example/covers/joy-of-minimalism-front.jpg"
+                backCoverUrl: "https://assets.bookworm.example/covers/joy-of-minimalism-back.jpg"
+                estimatedDelivery: "Mon, 21 Jul"
+                reviews:
+                  - id: "e1e1e1e1-1111-4111-8111-111111111111"
+                    userName: "John Smith"
+                    rating: 5
+                    comment: "The accordion component delivers large amounts of content in a small space."
+                    createdAt: "2026-10-10T14:30:00Z"
+                relatedBooks:
+                  - id: "c1c1c1c1-1111-4111-8111-111111111111"
+                    title: "The Art of Focus"
+                    authorName: "Arjun Patel"
+                    price: 399.00
+                    rating: 4.8
+                    frontCoverUrl: "https://assets.bookworm.example/covers/art-of-focus-front.jpg"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/books/featured:
+    get:
+      tags:
+        - Catalog
+      summary: Get featured book widgets
+      description: Returns lists for Recommended for You, Bestsellers this Month, and New Launches for the landing page.
+      operationId: getFeaturedBooks
+      security: []
+      responses:
+        '200':
+          description: Featured books payload retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeaturedBooksResponse'
+              example:
+                recommended:
+                  - id: "c1c1c1c1-1111-4111-8111-111111111111"
+                    title: "The Art of Focus"
+                    authorName: "Arjun Patel"
+                    price: 399.00
+                    rating: 4.8
+                    frontCoverUrl: "https://assets.bookworm.example/covers/art-of-focus-front.jpg"
+                bestsellers:
+                  - id: "c3c3c3c3-3333-4333-8333-333333333333"
+                    title: "The Midnight Hour"
+                    authorName: "James Adams"
+                    price: 299.00
+                    rating: 4.7
+                    frontCoverUrl: "https://assets.bookworm.example/covers/midnight-hour-front.jpg"
+                newLaunches:
+                  - id: "c2c2c2c2-2222-4222-8222-222222222222"
+                    title: "Joy of Minimalism"
+                    authorName: "Daniel Reed"
+                    price: 149.00
+                    rating: 4.6
+                    frontCoverUrl: "https://assets.bookworm.example/covers/joy-of-minimalism-front.jpg"
+
+  /api/v1/books/{id}/reviews:
+    post:
+      tags:
+        - Reviews
+      summary: Submit book review and rating
+      description: Allows an authenticated user to submit a 1 to 5 star rating and comment on a book.
+      operationId: createReview
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the book
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReviewRequest'
+            example:
+              rating: 5
+              comment: "A wonderfully insightful book that transformed my perspective on everyday focus."
+      responses:
+        '201':
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewDto'
+              example:
+                id: "e2e2e2e2-2222-4222-8222-222222222222"
+                userName: "John Smith"
+                rating: 5
+                comment: "A wonderfully insightful book that transformed my perspective on everyday focus."
+                createdAt: "2026-10-13T01:00:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/cart:
+    get:
+      tags:
+        - Cart
+      summary: Get user shopping cart
+      description: Retrieves active shopping cart with all items, quantities, and calculated item subtotal.
+      operationId: getCart
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Shopping cart retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartDto'
+              example:
+                cartId: "f1f1f1f1-1111-4111-8111-111111111111"
+                totalItems: 2
+                subtotal: 508.00
+                items:
+                  - itemId: "d1d1d1d1-1111-4111-8111-111111111111"
+                    bookId: "c2c2c2c2-2222-4222-8222-222222222222"
+                    title: "Joy of Minimalism"
+                    authorName: "Daniel Reed"
+                    format: "Paperback"
+                    unitPrice: 149.00
+                    quantity: 1
+                    totalPrice: 149.00
+                    frontCoverUrl: "https://assets.bookworm.example/covers/joy-of-minimalism-front.jpg"
+                  - itemId: "d2d2d2d2-2222-4222-8222-222222222222"
+                    bookId: "c4c4c4c4-4444-4444-8444-444444444444"
+                    title: "The Path to Success"
+                    authorName: "James Wright"
+                    format: "Paperback"
+                    unitPrice: 359.00
+                    quantity: 1
+                    totalPrice: 359.00
+                    frontCoverUrl: "https://assets.bookworm.example/covers/path-to-success-front.jpg"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/cart/items:
+    post:
+      tags:
+        - Cart
+      summary: Add book to shopping cart
+      description: Adds a specified quantity of a book into the current user's shopping cart.
+      operationId: addItemToCart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequest'
+            example:
+              bookId: "c2c2c2c2-2222-4222-8222-222222222222"
+              quantity: 1
+      responses:
+        '200':
+          description: Item added and updated cart returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/cart/items/{id}:
+    put:
+      tags:
+        - Cart
+      summary: Update cart item quantity
+      description: Updates quantity for a specific line item in the cart. If quantity is 0, the item is removed.
+      operationId: updateCartItemQuantity
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the cart item
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCartItemRequest'
+            example:
+              quantity: 2
+      responses:
+        '200':
+          description: Cart updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/checkout/quote:
+    post:
+      tags:
+        - Checkout
+      summary: Calculate checkout totals and quote
+      description: Calculates tax, delivery charges, discounts, and payable total for checkout preview.
+      operationId: calculateCheckoutQuote
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutQuoteRequest'
+            example:
+              couponCode: "SAVE100"
+              redeemGiftPoints: 0
+      responses:
+        '200':
+          description: Checkout quote calculated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutQuoteResponse'
+              example:
+                itemCount: 2
+                subtotal: 508.00
+                tax: 62.00
+                deliveryCharges: 0.00
+                couponDiscount: 100.00
+                giftPointsDiscount: 0.00
+                totalAmount: 470.00
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/orders:
+    post:
+      tags:
+        - Orders
+      summary: Create and place order
+      description: Places order with address and payment details, captures item snapshots, and clears the cart.
+      operationId: createOrder
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+            example:
+              shippingAddress:
+                firstName: "John"
+                lastName: "Smith"
+                addressLine: "123 Main Street, Apt 4B"
+                city: "Mumbai"
+                state: "Maharashtra"
+                postalCode: "400001"
+                phone: "+91 9876543210"
+              couponCode: "SAVE100"
+              paymentMethod: "CREDIT_CARD"
+              paymentDetails:
+                cardNumber: "4111222233334444"
+                nameOnCard: "John Smith"
+                expiryDate: "12/28"
+                cvv: "123"
+      responses:
+        '201':
+          description: Order created and payment processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+              example:
+                id: "7a7a7a7a-7777-4777-8777-777777777777"
+                orderNumber: "BW-20261013-9081"
+                status: "PAID"
+                subtotal: 508.00
+                tax: 62.00
+                shippingFee: 0.00
+                discount: 100.00
+                totalAmount: 470.00
+                paymentMethod: "CREDIT_CARD"
+                trackingNumber: "BW-TRK-749281"
+                estimatedDelivery: "2026-10-18"
+                orderDate: "2026-10-13T01:15:00Z"
+                cancelEligibleUntil: "2026-10-15T01:15:00Z"
+                shippingAddress:
+                  firstName: "John"
+                  lastName: "Smith"
+                  addressLine: "123 Main Street, Apt 4B"
+                  city: "Mumbai"
+                  state: "Maharashtra"
+                  postalCode: "400001"
+                  phone: "+91 9876543210"
+                items:
+                  - bookId: "c2c2c2c2-2222-4222-8222-222222222222"
+                    title: "Joy of Minimalism"
+                    price: 149.00
+                    quantity: 1
+                  - bookId: "c4c4c4c4-4444-4444-8444-444444444444"
+                    title: "The Path to Success"
+                    price: 359.00
+                    quantity: 1
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    get:
+      tags:
+        - Orders
+      summary: Get user order history
+      description: Retrieves the list of previous orders placed by the authenticated customer.
+      operationId: getOrderHistory
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Order history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/orders/{id}/cancel:
+    post:
+      tags:
+        - Orders
+      summary: Cancel order within 48 hours
+      description: Cancels an order if within 48 hours of placement and triggers an automatic refund.
+      operationId: cancelOrder
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the order
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Order successfully cancelled and refund initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelOrderResponse'
+              example:
+                orderId: "7a7a7a7a-7777-4777-8777-777777777777"
+                orderNumber: "BW-20261013-9081"
+                status: "CANCELLED"
+                refundAmount: 470.00
+                refundStatus: "PROCESSED"
+                message: "Order successfully cancelled within 48 hours. Refund of INR 470.00 processed."
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Order cannot be cancelled (e.g., 48 hours elapsed or already dispatched)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              example:
+                type: "about:blank"
+                title: "Unprocessable Entity"
+                status: 422
+                detail: "Order cancellation window (48 hours) has expired."
+
+  /api/v1/orders/{id}/buy-again:
+    post:
+      tags:
+        - Orders
+      summary: Re-add order items to cart
+      description: Reads items from a historical order and adds available items back into the customer cart.
+      operationId: buyAgainOrder
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the order to re-purchase
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Items re-added to cart successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuyAgainResponse'
+              example:
+                orderId: "7a7a7a7a-7777-4777-8777-777777777777"
+                itemsAddedCount: 2
+                cart:
+                  cartId: "f1f1f1f1-1111-4111-8111-111111111111"
+                  totalItems: 2
+                  subtotal: 508.00
+                message: "2 items added to your cart."
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Authorization header using the Bearer scheme. Format - Bearer {token}
+
+  responses:
+    BadRequest:
+      description: Invalid request payload or query parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "about:blank"
+            title: "Bad Request"
+            status: 400
+            detail: "Validation error: email must be a valid email address"
+    Unauthorized:
+      description: Missing, expired, or invalid JWT token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "about:blank"
+            title: "Unauthorized"
+            status: 401
+            detail: "Full authentication is required to access this resource"
+    NotFound:
+      description: The requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "about:blank"
+            title: "Not Found"
+            status: 404
+            detail: "Resource with the specified identifier not found"
+    Conflict:
+      description: Resource conflict (e.g. duplicate email address)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "about:blank"
+            title: "Conflict"
+            status: 409
+            detail: "An account with email john.smith@example.com already exists"
+
+  schemas:
+    ProblemDetail:
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri
+          default: "about:blank"
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - fullName
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          minLength: 8
+          maxLength: 100
+        fullName:
+          type: string
+          minLength: 2
+          maxLength: 150
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    UserDto:
+      type: object
+      required:
+        - id
+        - email
+        - fullName
+        - role
+        - giftPoints
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        fullName:
+          type: string
+        role:
+          type: string
+          enum: [ROLE_CUSTOMER, ROLE_ADMIN]
+        giftPoints:
+          type: integer
+          minimum: 0
+
+    AuthResponse:
+      type: object
+      required:
+        - token
+        - tokenType
+        - user
+      properties:
+        token:
+          type: string
+        tokenType:
+          type: string
+          default: "Bearer"
+        user:
+          $ref: '#/components/schemas/UserDto'
+
+    CategoryDto:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+        slug:
+          type: string
+          maxLength: 100
+
+    BookSummaryDto:
+      type: object
+      required:
+        - id
+        - title
+        - authorName
+        - price
+        - rating
+        - frontCoverUrl
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        authorName:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        format:
+          type: string
+        categoryName:
+          type: string
+        rating:
+          type: number
+          minimum: 0
+          maximum: 5
+        frontCoverUrl:
+          type: string
+          format: uri
+        estimatedDelivery:
+          type: string
+
+    PageBookDto:
+      type: object
+      required:
+        - content
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookSummaryDto'
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+
+    ReviewDto:
+      type: object
+      required:
+        - id
+        - userName
+        - rating
+        - comment
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        userName:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateReviewRequest:
+      type: object
+      required:
+        - rating
+        - comment
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          minLength: 3
+          maxLength: 1000
+
+    BookDetailDto:
+      type: object
+      required:
+        - id
+        - title
+        - isbn
+        - description
+        - categoryId
+        - categoryName
+        - authorName
+        - publisherName
+        - format
+        - language
+        - price
+        - stockQuantity
+        - salesCount
+        - rating
+        - frontCoverUrl
+        - estimatedDelivery
+        - reviews
+        - relatedBooks
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        isbn:
+          type: string
+        description:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+        categoryName:
+          type: string
+        authorName:
+          type: string
+        authorBio:
+          type: string
+        authorAvatarUrl:
+          type: string
+          format: uri
+        publisherName:
+          type: string
+        format:
+          type: string
+          enum: [Paperback, Hardcover, eBook]
+        language:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        stockQuantity:
+          type: integer
+          minimum: 0
+        salesCount:
+          type: integer
+          minimum: 0
+        rating:
+          type: number
+          minimum: 0
+          maximum: 5
+        frontCoverUrl:
+          type: string
+          format: uri
+        backCoverUrl:
+          type: string
+          format: uri
+        estimatedDelivery:
+          type: string
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewDto'
+        relatedBooks:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookSummaryDto'
+
+    FeaturedBooksResponse:
+      type: object
+      required:
+        - recommended
+        - bestsellers
+        - newLaunches
+      properties:
+        recommended:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookSummaryDto'
+        bestsellers:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookSummaryDto'
+        newLaunches:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookSummaryDto'
+
+    AddToCartRequest:
+      type: object
+      required:
+        - bookId
+        - quantity
+      properties:
+        bookId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 1
+
+    UpdateCartItemRequest:
+      type: object
+      required:
+        - quantity
+      properties:
+        quantity:
+          type: integer
+          minimum: 0
+          maximum: 10
+
+    CartItemDto:
+      type: object
+      required:
+        - itemId
+        - bookId
+        - title
+        - authorName
+        - format
+        - unitPrice
+        - quantity
+        - totalPrice
+      properties:
+        itemId:
+          type: string
+          format: uuid
+        bookId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        authorName:
+          type: string
+        format:
+          type: string
+        unitPrice:
+          type: number
+          minimum: 0
+        quantity:
+          type: integer
+          minimum: 1
+        totalPrice:
+          type: number
+          minimum: 0
+        frontCoverUrl:
+          type: string
+          format: uri
+
+    CartDto:
+      type: object
+      required:
+        - cartId
+        - totalItems
+        - subtotal
+        - items
+      properties:
+        cartId:
+          type: string
+          format: uuid
+        totalItems:
+          type: integer
+          minimum: 0
+        subtotal:
+          type: number
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItemDto'
+
+    CheckoutQuoteRequest:
+      type: object
+      properties:
+        couponCode:
+          type: string
+          maxLength: 50
+        redeemGiftPoints:
+          type: integer
+          minimum: 0
+          default: 0
+
+    CheckoutQuoteResponse:
+      type: object
+      required:
+        - itemCount
+        - subtotal
+        - tax
+        - deliveryCharges
+        - couponDiscount
+        - giftPointsDiscount
+        - totalAmount
+      properties:
+        itemCount:
+          type: integer
+          minimum: 0
+        subtotal:
+          type: number
+          minimum: 0
+        tax:
+          type: number
+          minimum: 0
+        deliveryCharges:
+          type: number
+          minimum: 0
+        couponDiscount:
+          type: number
+          minimum: 0
+        giftPointsDiscount:
+          type: number
+          minimum: 0
+        totalAmount:
+          type: number
+          minimum: 0
+
+    OrderAddressDto:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - addressLine
+        - city
+        - state
+        - postalCode
+        - phone
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        addressLine:
+          type: string
+          minLength: 5
+          maxLength: 255
+        city:
+          type: string
+          minLength: 2
+          maxLength: 100
+        state:
+          type: string
+          minLength: 2
+          maxLength: 100
+        postalCode:
+          type: string
+          minLength: 4
+          maxLength: 20
+        phone:
+          type: string
+          pattern: '^\+?[0-9\s-]{8,20}$'
+
+    CardPaymentDetailsDto:
+      type: object
+      required:
+        - cardNumber
+        - nameOnCard
+        - expiryDate
+        - cvv
+      properties:
+        cardNumber:
+          type: string
+          pattern: '^[0-9]{13,19}$'
+        nameOnCard:
+          type: string
+          minLength: 2
+          maxLength: 100
+        expiryDate:
+          type: string
+          pattern: '^(0[1-9]|1[0-2])\/([0-9]{2})$'
+        cvv:
+          type: string
+          pattern: '^[0-9]{3,4}$'
+
+    CreateOrderRequest:
+      type: object
+      required:
+        - shippingAddress
+        - paymentMethod
+      properties:
+        shippingAddress:
+          $ref: '#/components/schemas/OrderAddressDto'
+        couponCode:
+          type: string
+          maxLength: 50
+        redeemGiftPoints:
+          type: integer
+          minimum: 0
+          default: 0
+        paymentMethod:
+          type: string
+          enum: [CREDIT_CARD, DEBIT_CARD, UPI, WALLET]
+        paymentDetails:
+          $ref: '#/components/schemas/CardPaymentDetailsDto'
+
+    OrderItemDto:
+      type: object
+      required:
+        - bookId
+        - title
+        - price
+        - quantity
+      properties:
+        bookId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        quantity:
+          type: integer
+          minimum: 1
+
+    OrderDto:
+      type: object
+      required:
+        - id
+        - orderNumber
+        - status
+        - subtotal
+        - tax
+        - shippingFee
+        - discount
+        - totalAmount
+        - shippingAddress
+        - paymentMethod
+        - trackingNumber
+        - estimatedDelivery
+        - orderDate
+        - cancelEligibleUntil
+        - items
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderNumber:
+          type: string
+        status:
+          type: string
+          enum: [PAID, PROCESSING, SHIPPED, DELIVERED, CANCELLED, REFUNDED]
+        subtotal:
+          type: number
+          minimum: 0
+        tax:
+          type: number
+          minimum: 0
+        shippingFee:
+          type: number
+          minimum: 0
+        discount:
+          type: number
+          minimum: 0
+        totalAmount:
+          type: number
+          minimum: 0
+        shippingAddress:
+          $ref: '#/components/schemas/OrderAddressDto'
+        paymentMethod:
+          type: string
+        trackingNumber:
+          type: string
+        estimatedDelivery:
+          type: string
+          format: date
+        orderDate:
+          type: string
+          format: date-time
+        cancelEligibleUntil:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemDto'
+
+    CancelOrderResponse:
+      type: object
+      required:
+        - orderId
+        - orderNumber
+        - status
+        - refundAmount
+        - refundStatus
+        - message
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        orderNumber:
+          type: string
+        status:
+          type: string
+          example: "CANCELLED"
+        refundAmount:
+          type: number
+          minimum: 0
+        refundStatus:
+          type: string
+          example: "PROCESSED"
+        message:
+          type: string
+
+    BuyAgainResponse:
+      type: object
+      required:
+        - orderId
+        - itemsAddedCount
+        - cart
+        - message
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        itemsAddedCount:
+          type: integer
+          minimum: 0
+        cart:
+          $ref: '#/components/schemas/CartDto'
+        message:
+          type: string

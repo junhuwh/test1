@@ -1,0 +1,20 @@
+# Maven build output
+target/
+*.class
+
+# Logs
+*.log
+spring-boot.log
+spring-boot-error.log
+
+# IDE & Editor
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# System
+.DS_Store
+Thumbs.db
