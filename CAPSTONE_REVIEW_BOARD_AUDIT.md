@@ -28,7 +28,7 @@ Following earlier candidate feedback indicating "Not Yet Ready" due to brevity i
 - **Status & Highlights**: Industry-standard OpenAPI 3.1.0 contract (39 KB), defining 15 MVP endpoints, 25 schema models, with all 66 internal `$ref` schema references verified and fully resolving. Configured with Bearer JWT security scheme and RFC 9457 Problem Details standard error responses. Directly powers live SpringDoc Swagger UI.
 - **Rating**: 🟢 **Exceeds Expectations** (Contract-first engineering paradigm strictly maintained).
 
-### 3. Verification Reports (`VERIFICATION_REPORT.md` & `PHASE_2` ~ `PHASE_5` & `API_DESIGN_GOVERNANCE_REPORT.md`)
+### 3. Verification Reports (`PHASE_1_VERIFICATION_REPORT.md` & `PHASE_2` ~ `PHASE_5`)
 - **Status & Highlights**: 5 chronological phase verification reports plus 1 architectural governance report. Every report records real HTTP curl requests, JSON response payloads, PostgreSQL `psql` queries, and runtime log outputs verifying persistence, constraint handling, and failure modes.
 - **Rating**: 🟢 **Exceeds Expectations** (Complete, empirical, and irrefutable verification record).
 
@@ -58,7 +58,7 @@ Addressing the specific feedback points from the previous evaluation:
 | Identified Risk | Impact | Implemented Mitigation |
 | :--- | :---: | :--- |
 | **Video lacked working evidence** | High | Video must walk through Swagger UI live calls, run `mvn test` live in console, and inspect PostgreSQL database live via `psql`. |
-| **API design review perceived as brief** | Medium | Created standalone [API_DESIGN_GOVERNANCE_REPORT.md](./API_DESIGN_GOVERNANCE_REPORT.md) and [API_DESIGN_REVIEW.md](./API_DESIGN_REVIEW.md) detailing RFC 9457 compliance and REST maturity. |
+| **API design review perceived as brief** | Medium | Created standalone [API_DESIGN_REVIEW.md](./API_DESIGN_REVIEW.md) detailing RFC 9457 compliance and REST maturity. |
 | **GitHub repo not directly accessible** | High | Configured repository remotes, synced all branches (`main` and `feature/api-implementation`), and verified candidate access settings. |
 | **Deployability question** | Medium | Delivered multi-stage `Dockerfile` and `docker-compose.yml` with health checks. |
 
